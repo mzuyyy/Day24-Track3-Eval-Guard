@@ -1,7 +1,11 @@
 models:
   - type: main
     engine: openai
-    model: gpt-4o-mini
+    model: mistral-small-latest
+    # base_url & api_key lấy từ biến môi trường (OPENAI_BASE_URL / OPENAI_API_KEY),
+    # được thiết lập bởi setup_nemo_rails() trong src/phase_c_guard.py để trỏ
+    # tới Mistral platform (https://api.mistral.ai/v1). Đổi model tại .env
+    # (MISTRAL_MODEL) và cập nhật dòng "model:" trên cho khớp nếu cần.
 
 instructions:
   - type: general

@@ -110,51 +110,127 @@ def group_by_distribution(test_set: list[dict]) -> dict[str, list[dict]]:
     Returns:
         {"factual": [...], "multi_hop": [...], "adversarial": [...]}
     """
-    # TODO: Implement
-    # groups = {"factual": [], "multi_hop": [], "adversarial": []}
-    # for item in test_set:
-    #     groups[item["distribution"]].append(item)
-    # return groups
-    return {"factual": [], "multi_hop": [], "adversarial": []}
+    groups: dict[str, list[dict]] = {"factual": [], "multi_hop": [], "adversarial": []}
+    for item in test_set:
+        dist = item.get("distribution", "")
+        if dist not in groups:  # phòng trường hợp có distribution mới
+            groups[dist] = []
+        groups[dist].append(item)
+    return groups
+
+
+def _extract_ragas_scores(raw) -> dict:
+    """Chuẩn hoá kết quả RAGAS (aggregate dict hoặc per_question list) thành dict 4 metric."""
+    defaults = {"faithfulness": 0.0, "answer_relevancy": 0.0,
+                "context_precision": 0.0, "context_recall": 0.0}
+    if raw is None:
+        return defaults
+    # m4_eval có thể trả về {"per_question": [...]}
+    if isinstance(raw, dict) and raw.get("per_question"):
+        pq = raw["per_question"][0]
+        if isinstance(pq, dict):
+            return {k: float(pq.get(k, 0.0)) for k in defaults}
+        return {k: float(getattr(pq, k, 0.0)) for k in defaults}
+    if isinstance(raw, dict):
+        return {k: float(raw.get(k, 0.0)) for k in defaults}
+    return defaults
+
+
+def _run_ragas_library(answers: list[dict]) -> list[RagasResult]:
+    """Fallback: chạy RAGAS library trực tiếp (cần API key + embeddings model).
+
+    Chỉ dùng khi chưa copy src/m4_eval.py từ Day 18. Best-effort — trả về []
+    nếu thiếu dependency hoặc chưa có API key.
+    """
+    try:
+        from datasets import Dataset
+        from ragas import evaluate
+        from ragas.metrics import (faithfulness, answer_relevancy,
+                                   context_precision, context_recall)
+        from config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
+        from langchain_openai import ChatOpenAI
+        from langchain_community.embeddings import HuggingFaceEmbeddings
+    except Exception as e:  # noqa: BLE001
+        print(f"⚠️  RAGAS library/deps không khả dụng: {e}")
+        return []
+
+    if not LLM_API_KEY:
+        print("⚠️  Chưa có API key — bỏ qua RAGAS library fallback.")
+        return []
+
+    try:
+        llm = ChatOpenAI(model=LLM_MODEL, api_key=LLM_API_KEY,
+                         base_url=LLM_BASE_URL, temperature=0.0)
+        embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
+        ds = Dataset.from_dict({
+            "question": [a["question"] for a in answers],
+            "answer": [a["answer"] for a in answers],
+            "contexts": [a["contexts"] for a in answers],
+            "ground_truth": [a["ground_truth"] for a in answers],
+        })
+        result = evaluate(ds, metrics=[faithfulness, answer_relevancy,
+                                       context_precision, context_recall],
+                          llm=llm, embeddings=embeddings)
+        df = result.to_pandas()
+        results = []
+        for i, a in enumerate(answers):
+            row = df.iloc[i]
+            results.append(RagasResult(
+                question_id=a["id"], distribution=a["distribution"],
+                question=a["question"], answer=a["answer"],
+                contexts=a["contexts"], ground_truth=a["ground_truth"],
+                faithfulness=float(row.get("faithfulness", 0.0)),
+                answer_relevancy=float(row.get("answer_relevancy", 0.0)),
+                context_precision=float(row.get("context_precision", 0.0)),
+                context_recall=float(row.get("context_recall", 0.0)),
+            ))
+        return results
+    except Exception as e:  # noqa: BLE001
+        print(f"⚠️  RAGAS library fallback lỗi: {e}")
+        return []
 
 
 def run_ragas_50q(answers: list[dict]) -> list[RagasResult]:
     """Task 2: Chạy RAGAS 4 metrics trên toàn bộ 50 câu hỏi.
 
-    Gợi ý — import từ Day 18 của bạn:
-        from src.m4_eval import evaluate_ragas
-
-    Steps:
-        1. Extract questions, answers, contexts, ground_truths từ answers list
-        2. Gọi evaluate_ragas() từ m4_eval.py
-        3. Kết hợp kết quả với distribution info từ answers list
-        4. Return list[RagasResult]
+    Ưu tiên dùng evaluate_ragas() từ Day 18 (src/m4_eval.py). Nếu chưa copy
+    Day 18, fallback sang RAGAS library trực tiếp (cần API key + embeddings).
     """
-    # TODO: Implement
-    # try:
-    #     from src.m4_eval import evaluate_ragas
-    # except ImportError:
-    #     print("⚠️  Không tìm thấy src/m4_eval.py — đã copy từ Day 18 chưa?")
-    #     return []
-    #
-    # questions     = [a["question"]    for a in answers]
-    # ans_texts     = [a["answer"]      for a in answers]
-    # contexts      = [a["contexts"]    for a in answers]
-    # ground_truths = [a["ground_truth"] for a in answers]
-    #
-    # raw = evaluate_ragas(questions, ans_texts, contexts, ground_truths)
-    # per_q = raw.get("per_question", [])
-    #
-    # results = []
-    # for a, pq in zip(answers, per_q):
-    #     results.append(RagasResult(
-    #         question_id=a["id"], distribution=a["distribution"],
-    #         question=a["question"], answer=a["answer"],
-    #         contexts=a["contexts"], ground_truth=a["ground_truth"],
-    #         faithfulness=pq.faithfulness, answer_relevancy=pq.answer_relevancy,
-    #         context_precision=pq.context_precision, context_recall=pq.context_recall,
-    #     ))
-    # return results
+    try:
+        from src.m4_eval import evaluate_ragas
+    except ImportError:
+        print("⚠️  Không tìm thấy src/m4_eval.py — đã copy từ Day 18 chưa?")
+        evaluate_ragas = None
+
+    results: list[RagasResult] = []
+
+    if evaluate_ragas is not None:
+        for a in answers:
+            try:
+                raw = evaluate_ragas(
+                    [a["question"]], [a["answer"]],
+                    [a["contexts"]], [a["ground_truth"]],
+                )
+            except Exception as e:  # noqa: BLE001
+                print(f"  ⚠️  RAGAS lỗi ở câu {a.get('id')}: {e}")
+                raw = {}
+            scores = _extract_ragas_scores(raw)
+            results.append(RagasResult(
+                question_id=a["id"], distribution=a["distribution"],
+                question=a["question"], answer=a["answer"],
+                contexts=a["contexts"], ground_truth=a["ground_truth"],
+                faithfulness=scores["faithfulness"],
+                answer_relevancy=scores["answer_relevancy"],
+                context_precision=scores["context_precision"],
+                context_recall=scores["context_recall"],
+            ))
+        return results
+
+    fallback = _run_ragas_library(answers)
+    if fallback:
+        return fallback
+
+    print("⚠️  Không thể chạy RAGAS (thiếu Day 18 m4_eval + RAGAS library/API key).")
     return []
 
 
@@ -166,24 +242,22 @@ def bottom_10(results: list[RagasResult]) -> list[dict]:
           "question": ..., "avg_score": ..., "worst_metric": ...,
           "diagnosis": ..., "suggested_fix": ...}, ...]
     """
-    # TODO: Implement
-    # sorted_asc = sorted(results, key=lambda r: r.avg_score)
-    # bottom = sorted_asc[:10]
-    # output = []
-    # for i, r in enumerate(bottom):
-    #     diag, fix = DIAGNOSTIC_TREE[r.worst_metric]
-    #     output.append({
-    #         "rank": i + 1,
-    #         "question_id": r.question_id,
-    #         "distribution": r.distribution,
-    #         "question": r.question,
-    #         "avg_score": round(r.avg_score, 4),
-    #         "worst_metric": r.worst_metric,
-    #         "diagnosis": diag,
-    #         "suggested_fix": fix,
-    #     })
-    # return output
-    return []
+    sorted_asc = sorted(results, key=lambda r: r.avg_score)
+    bottom = sorted_asc[:10]
+    output = []
+    for i, r in enumerate(bottom):
+        diag, fix = DIAGNOSTIC_TREE[r.worst_metric]
+        output.append({
+            "rank": i + 1,
+            "question_id": r.question_id,
+            "distribution": r.distribution,
+            "question": r.question,
+            "avg_score": round(r.avg_score, 4),
+            "worst_metric": r.worst_metric,
+            "diagnosis": diag,
+            "suggested_fix": fix,
+        })
+    return output
 
 
 def cluster_analysis(results: list[RagasResult]) -> dict:
@@ -204,25 +278,34 @@ def cluster_analysis(results: list[RagasResult]) -> dict:
           "insight": "..."
         }
     """
-    # TODO: Implement
-    # matrix = {
-    #     metric: {"factual": 0, "multi_hop": 0, "adversarial": 0}
-    #     for metric in DIAGNOSTIC_TREE
-    # }
-    # for r in results:
-    #     matrix[r.worst_metric][r.distribution] += 1
-    #
-    # # Find dominant failure
-    # dominant_dist   = max(["factual", "multi_hop", "adversarial"],
-    #                       key=lambda d: sum(matrix[m][d] for m in matrix))
-    # dominant_metric = max(matrix, key=lambda m: sum(matrix[m].values()))
-    # insight = (f"Distribution '{dominant_dist}' có nhiều failure nhất. "
-    #            f"Metric '{dominant_metric}' là điểm yếu chủ đạo. "
-    #            f"Gợi ý: {DIAGNOSTIC_TREE[dominant_metric][1]}")
-    #
-    # return {"matrix": matrix, "dominant_failure_distribution": dominant_dist,
-    #         "dominant_failure_metric": dominant_metric, "insight": insight}
-    return {}
+    matrix = {
+        metric: {"factual": 0, "multi_hop": 0, "adversarial": 0}
+        for metric in DIAGNOSTIC_TREE
+    }
+    for r in results:
+        dist = r.distribution
+        if dist in matrix.get(r.worst_metric, {}):
+            matrix[r.worst_metric][dist] += 1
+
+    distributions = ["factual", "multi_hop", "adversarial"]
+    if results:
+        dominant_dist = max(distributions,
+                            key=lambda d: sum(matrix[m][d] for m in matrix))
+        dominant_metric = max(matrix, key=lambda m: sum(matrix[m].values()))
+        insight = (f"Distribution '{dominant_dist}' có nhiều failure nhất. "
+                   f"Metric '{dominant_metric}' là điểm yếu chủ đạo. "
+                   f"Gợi ý: {DIAGNOSTIC_TREE[dominant_metric][1]}")
+    else:
+        dominant_dist = "n/a"
+        dominant_metric = "n/a"
+        insight = "Không có dữ liệu để phân tích failure cluster."
+
+    return {
+        "matrix": matrix,
+        "dominant_failure_distribution": dominant_dist,
+        "dominant_failure_metric": dominant_metric,
+        "insight": insight,
+    }
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────

@@ -1,0 +1,151 @@
+{
+  "judge_model": "mistral-small-latest",
+  "cohen_kappa": 1.0,
+  "kappa_interpretation": "almost perfect",
+  "observed_agreement": 1.0,
+  "per_question": [
+    {
+      "question_id": 1,
+      "question": "Nhân viên được nghỉ bao nhiêu ngày khi kết hôn?",
+      "model_answer": "Nhân viên được nghỉ 3 ngày làm việc có lương khi kết hôn.",
+      "ground_truth": "Nhân viên được nghỉ 3 ngày làm việc có lương khi kết hôn, không trừ vào phép năm.",
+      "judge_label": 1,
+      "human_label": 1,
+      "agree": true,
+      "judge_reasoning": "Câu trả lời hoàn toàn chính xác và khớp hoàn toàn với ground truth về số ngày nghỉ (3 ngày làm việc có lương) cũng như điều kiện không trừ vào phép năm.",
+      "human_note": "Chính xác và đầy đủ."
+    },
+    {
+      "question_id": 5,
+      "question": "Muốn mua thiết bị trị giá 55 triệu cần ai phê duyệt?",
+      "model_answer": "Cần Giám đốc phòng ban phê duyệt.",
+      "ground_truth": "Đơn hàng trên 50.000.000 VNĐ cần Tổng Giám đốc (CEO) phê duyệt.",
+      "judge_label": 0,
+      "human_label": 0,
+      "agree": true,
+      "judge_reasoning": "Câu trả lời không chính xác vì không khớp với ground truth: thiết bị trị giá 55 triệu cần Tổng Giám đốc (CEO) phê duyệt, không phải Giám đốc phòng ban.",
+      "human_note": "Sai — 55 triệu vượt ngưỡng 50 triệu nên phải CEO phê duyệt, không phải Director."
+    },
+    {
+      "question_id": 12,
+      "question": "Thưởng Tết tối thiểu cho nhân viên chính thức có từ 6 tháng trở lên là bao nhiêu?",
+      "model_answer": "Nhân viên được thưởng Tết tối thiểu 1 tháng lương.",
+      "ground_truth": "Nhân viên chính thức có thời gian làm việc từ 6 tháng trở lên được thưởng Tết tối thiểu 1 tháng lương. Nhân viên dưới 6 tháng được hưởng pro-rata theo số tháng làm việc thực tế.",
+      "judge_label": 1,
+      "human_label": 1,
+      "agree": true,
+      "judge_reasoning": "Câu trả lời hoàn toàn chính xác và khớp với ground truth. Nội dung bao gồm mức thưởng tối thiểu (1 tháng lương), điều kiện áp dụng (nhân viên chính thức từ 6 tháng trở lên) và không có xung đột phiên bản.",
+      "human_note": "Đúng và súc tích."
+    },
+    {
+      "question_id": 21,
+      "question": "Một nhân viên Senior có 9 năm thâm niên được nghỉ bao nhiêu ngày phép năm và lương trong khoảng nào?",
+      "model_answer": "Được nghỉ 18 ngày phép (15 cơ bản + 3 thâm niên). Lương Senior từ 20 đến 35 triệu.",
+      "ground_truth": "Theo chính sách v2024: 15 ngày cơ bản + 3 ngày thâm niên (9÷3=3) = 18 ngày phép. Lương Senior (P3-P4): 20-35 triệu VNĐ/tháng.",
+      "judge_label": 1,
+      "human_label": 1,
+      "agree": true,
+      "judge_reasoning": "Câu trả lời hoàn toàn chính xác và đầy đủ, khớp hoàn toàn với ground truth về số ngày phép (18 ngày) và mức lương (20-35 triệu) theo chính sách v2024. Không có xung đột phiên bản.",
+      "human_note": "Tính đúng, bao gồm cả phép và lương."
+    },
+    {
+      "question_id": 23,
+      "question": "Nhân viên được tài trợ khóa học 25 triệu, nghỉ việc sau 8 tháng. Phải hoàn trả bao nhiêu?",
+      "model_answer": "Hoàn trả 25 triệu vì chưa đủ 1 năm cam kết.",
+      "ground_truth": "Nhân viên phải cam kết làm việc ít nhất 1 năm sau khi hoàn thành khóa học. Nghỉ sau 8 tháng là trước hạn cam kết, phải hoàn trả 100% chi phí tức 25.000.000 VNĐ.",
+      "judge_label": 1,
+      "human_label": 1,
+      "agree": true,
+      "judge_reasoning": "Câu trả lời hoàn toàn chính xác, khớp hoàn toàn với ground truth về số liệu (25 triệu), điều kiện cam kết (1 năm) và trường hợp nghỉ việc (8 tháng). Nội dung đầy đủ, không thiếu thông tin, và ưu tiên phiên bản chính sách hiện hành.",
+      "human_note": "Đúng — 100% hoàn trả vì nghỉ trước 12 tháng."
+    },
+    {
+      "question_id": 29,
+      "question": "Nhân viên tạm ứng 8 triệu, chưa thanh toán sau 30 ngày. Ai phê duyệt và phí phạt là bao nhiêu?",
+      "model_answer": "Trưởng phòng phê duyệt. Phạt 2% tháng trên 8 triệu.",
+      "ground_truth": "Phê duyệt: 8 triệu (≥5 triệu) cần Trưởng phòng + Kế toán trưởng. Phí phạt quá hạn 15 ngày: 2%/tháng × 8.000.000 × (15/30) = 80.000 VNĐ. Không được tạm ứng mới cho đến khi hoàn ứng.",
+      "judge_label": 0,
+      "human_label": 0,
+      "agree": true,
+      "judge_reasoning": "Câu trả lời thiếu thông tin quan trọng: (1) Không đề cập đến yêu cầu phê duyệt bởi Kế toán trưởng (do khoản tạm ứng ≥5 triệu), (2) Tính phí phạt không chính xác (chỉ áp dụng cho 15 ngày quá hạn, không phải toàn bộ 30 ngày), (3) Không nêu điều kiện cấm tạm ứng mới cho đến khi hoàn ứng.",
+      "human_note": "Thiếu — 8 triệu cần cả Kế toán trưởng. Phạt phải tính pro-rata cho 15 ngày quá hạn = 80.000 VNĐ."
+    },
+    {
+      "question_id": 33,
+      "question": "Nhân viên Manager có thâm niên 12 năm: tổng phụ cấp hàng tháng và số ngày phép năm?",
+      "model_answer": "Phép: 19 ngày. Phụ cấp: 1.500.000 VNĐ/tháng.",
+      "ground_truth": "Phụ cấp tháng: ăn trưa 1.000.000 + điện thoại Manager 500.000 = 1.500.000 VNĐ. Phép năm v2024: 15 ngày cơ bản + 4 ngày thâm niên (12÷3=4) = 19 ngày phép.",
+      "judge_label": 1,
+      "human_label": 1,
+      "agree": true,
+      "judge_reasoning": "Câu trả lời khớp hoàn toàn với ground truth về cả số liệu (19 ngày phép, 1.500.000 VNĐ phụ cấp) và cách tính (phép năm v2024: 15 ngày cơ bản + 4 ngày thâm niên; phụ cấp gồm ăn trưa 1.000.000 + điện thoại Manager 500.000). Đầy đủ và ưu tiên phiên bản policy mới nhất (v2024).",
+      "human_note": "Tính đúng cả hai."
+    },
+    {
+      "question_id": 41,
+      "question": "Nhân viên được nghỉ bao nhiêu ngày phép năm?",
+      "model_answer": "Nhân viên được nghỉ 12 ngày phép năm.",
+      "ground_truth": "Theo chính sách v2024 HIỆN HÀNH: 15 ngày cơ bản (+1 ngày/3 năm thâm niên). Chính sách v2023 (đã bị thay thế) là 12 ngày. RAG có thể retrieve cả 2 tài liệu — câu trả lời đúng phải ưu tiên v2024.",
+      "judge_label": 0,
+      "human_label": 0,
+      "agree": true,
+      "judge_reasoning": "Câu trả lời không chính xác do không ưu tiên phiên bản chính sách hiện hành (v2024) mà sử dụng phiên bản cũ (v2023). Ground truth yêu cầu 15 ngày phép năm (cơ bản + thâm niên), trong khi câu trả lời đưa ra 12 ngày.",
+      "human_note": "Sai — trả lời theo v2023 đã hết hiệu lực. v2024 hiện hành là 15 ngày."
+    },
+    {
+      "question_id": 46,
+      "question": "Nhân viên thử việc có được nghỉ phép năm không?",
+      "model_answer": "Nhân viên thử việc không được nghỉ phép năm và phải xin nghỉ không lương nếu cần.",
+      "ground_truth": "KHÔNG. Nhân viên thử việc không được nghỉ phép năm. Nếu cần nghỉ phải xin nghỉ không lương và được trưởng phòng phê duyệt. Đây là negation trap — câu trả lời đúng là phủ định.",
+      "judge_label": 1,
+      "human_label": 1,
+      "agree": true,
+      "judge_reasoning": "Câu trả lời hoàn toàn chính xác, khớp với ground truth về chính sách nghỉ phép năm của nhân viên thử việc (không được nghỉ phép năm, phải xin nghỉ không lương nếu cần). Nội dung đầy đủ, không xung đột phiên bản.",
+      "human_note": "Đúng hoàn toàn, bao gồm hành động thay thế."
+    },
+    {
+      "question_id": 50,
+      "question": "Nhân viên Manager có thể dùng VPN cá nhân (NordVPN) khi WFH không?",
+      "model_answer": "Được, miễn là đảm bảo kết nối an toàn.",
+      "ground_truth": "KHÔNG. Chính sách VPN v1.3 cấm sử dụng VPN cá nhân (NordVPN, ExpressVPN) trong mạng công ty. Bắt buộc dùng VPN WireGuard của công ty. Đây là policy contradiction trap — câu hỏi nghe hợp lý nhưng vi phạm chính sách.",
+      "judge_label": 0,
+      "human_label": 0,
+      "agree": true,
+      "judge_reasoning": "Câu trả lời không chính xác vì vi phạm chính sách VPN v1.3 (cấm VPN cá nhân). Không đề cập đến yêu cầu bắt buộc sử dụng VPN WireGuard của công ty, dẫn đến policy contradiction trap.",
+      "human_note": "Sai — VPN cá nhân bị cấm theo chính sách VPN v1.3. Phải dùng VPN WireGuard của công ty."
+    }
+  ],
+  "swap_and_average_demo": [
+    {
+      "question": "Nhan vien duoc nghi bao nhieu ngay phep nam?",
+      "answer_a": "Nhan vien duoc nghi 15 ngay phep nam theo chinh sach v2024 hien hanh.",
+      "answer_b": "Theo quy dinh, nhan vien co 12 ngay phep hang nam.",
+      "winner_pass1": "B",
+      "winner_pass2": "B",
+      "final_winner": "B",
+      "position_consistent": true,
+      "scores_pass1": {
+        "A": 0.6,
+        "B": 0.9
+      },
+      "scores_pass2": {
+        "A": 0.3,
+        "B": 0.95
+      },
+      "reasoning_pass1": "Answer B cung cấp thông tin chính xác theo quy định pháp luật hiện hành (12 ngày phép năm), trong khi Answer A đề cập đến chính sách không rõ ràng (v2024) và không có cơ sở pháp lý. Cả hai đều súc tích, nhưng độ chính xác của B cao hơn.",
+      "reasoning_pass2": "Answer A cung cấp thông tin chính xác theo quy định chung về phép năm tại Việt Nam (12 ngày), trong khi Answer B đưa ra con số không chính xác (15 ngày) và không có căn cứ rõ ràng. Cả hai đều súc tích, nhưng A có độ chính xác cao hơn."
+    }
+  ],
+  "bias_report": {
+    "total_judged": 1,
+    "position_bias_rate": 0.0,
+    "position_bias_count": 0,
+    "verbosity_bias": 0.0,
+    "verbosity_details": {
+      "a_wins_a_longer": 0,
+      "b_wins_b_longer": 0,
+      "total_decisive": 1
+    },
+    "interpretation": "Position bias thấp — judge ổn định."
+  }
+}
